@@ -1,20 +1,29 @@
 import { Billboard, Bounds, Plane, useFBO, useGLTF } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import gsap from 'gsap';
+import useWindowSize from 'hooks/useWindowSize';
 import { useEffect, useMemo, useRef } from 'react';
-import { FrontSide, MeshBasicMaterial, Scene } from 'three';
+import { RawShaderMaterial, Scene, Vector3 } from 'three';
 import { H2oLogo } from './H2oLogo';
 import checkpoints from './checkpoints';
-import CustomShaderMaterial from 'three-custom-shader-material';
 
-import useWindowSize from 'hooks/useWindowSize';
+import zmooth from 'util/zmooth';
 import baseVertexShader from './base.vert';
+import blurFragmentShader from './blur.frag';
+import blurVertexShader from './blur.vert';
 import finalFragmentShader from './final.frag';
 
 let _enterVenice: () => void;
 export function enterVenice() {
     _enterVenice?.();
 }
+
+let blurMaterial: RawShaderMaterial;
+const cameraPos = new Vector3();
+const cameraRot = new Vector3();
+
+const sx = zmooth.val(0, 3);
+const sy = zmooth.val(0, 3);
 
 export function Home3D() {
     const windowSize = useWindowSize();
@@ -30,12 +39,18 @@ export function Home3D() {
 
     const sceneRef = useRef<Scene>(null);
     const screenSceneRef = useRef<Scene>(null);
-    const fbo = useFBO({
+    const w = window.innerWidth * 0.25;
+    const h = window.innerHeight * 0.25;
+    const fboScene = useFBO({
         samples: 4,
     });
-    const fbo2 = useFBO();
+    const fbo1 = useFBO(w, h);
+    const fbo2 = useFBO(w, h);
 
     useEffect(() => {
+        cameraPos.set(52, 6, 70);
+        cameraRot.set(0.12, 0, 0);
+
         let currIdx = 0;
         let scrollEnabled = false;
 
@@ -117,7 +132,7 @@ export function Home3D() {
 
                 tl.addLabel(checkpoint.id);
                 tl.to(
-                    three.camera.position,
+                    cameraPos,
                     {
                         x: checkpoint.position[0],
                         y: checkpoint.position[1],
@@ -128,7 +143,7 @@ export function Home3D() {
                     checkpoint.id
                 );
                 tl.to(
-                    three.camera.rotation,
+                    cameraRot,
                     {
                         x: currAngle.x, //checkpoint.rotation[0],
                         y: currAngle.y, //checkpoint.rotation[1],
@@ -168,16 +183,17 @@ export function Home3D() {
                 scrollPrev();
             }
         };
-
         window.addEventListener('wheel', onWheel);
 
-        // anim enter
-        three.camera.position.set(52, 6, 70);
-        three.camera.rotation.set(0.12, 0, 0);
-        _enterVenice = () => {
-            three.camera.position.set(52, 6, 70);
-            three.camera.rotation.set(0.12, 0, 0);
+        // const onMouseMove = (evt: MouseEvent) => {
+        //     const mousePos = getMousePos(evt);
+        //     sx.to = (mousePos.x / window.innerWidth) * 2 - 1;
+        //     sy.to = (mousePos.y / window.innerHeight) * 2 - 1;
+        // };
+        // window.addEventListener('mousemove', onMouseMove);
 
+        // anim enter
+        _enterVenice = () => {
             const tl = gsap.timeline({
                 onComplete: () => {
                     scrollEnabled = true;
@@ -186,7 +202,7 @@ export function Home3D() {
 
             const startCheckpoint = checkpoints[0];
             tl.to(
-                three.camera.position,
+                cameraPos,
                 {
                     x: startCheckpoint.position[0],
                     y: startCheckpoint.position[1],
@@ -197,7 +213,7 @@ export function Home3D() {
                 startCheckpoint.id
             );
             tl.to(
-                three.camera.rotation,
+                cameraRot,
                 {
                     x: startCheckpoint.rotation[0],
                     y: startCheckpoint.rotation[1],
@@ -206,6 +222,16 @@ export function Home3D() {
                     ease: 'power3.inOut',
                 },
                 startCheckpoint.id
+            );
+
+            tl.to(
+                uniforms.u_power,
+                {
+                    value: 0,
+                    duration: 0.5,
+                    ease: 'sine.out',
+                },
+                0
             );
         };
 
@@ -217,28 +243,89 @@ export function Home3D() {
     }, []);
 
     useFrame((state) => {
+        if (!blurMaterial) {
+            blurMaterial = new RawShaderMaterial({
+                vertexShader: blurVertexShader,
+                fragmentShader: blurFragmentShader,
+                uniforms: {
+                    u_tex: {
+                        value: fbo1.texture,
+                    },
+                    u_resolution: {
+                        value: [fbo1.width, fbo1.height],
+                    },
+                    u_direction: {
+                        value: [1, 0],
+                    },
+                },
+            });
+        }
+
         const scene = sceneRef.current!;
+        const screenScene = screenSceneRef.current!;
         const camera = state.camera;
 
-        camera.position.set(52, 6, 70);
-        camera.rotation.set(0.12, 0, 0);
+        // update camera
+        camera.position.set(cameraPos.x - sx.value * 0.1, cameraPos.y + sy.value * 0.1, cameraPos.z);
+        camera.rotation.set(cameraRot.x, cameraRot.y, cameraRot.z);
 
+        // render full scene to FBO
         scene.visible = true;
-        state.gl.setRenderTarget(fbo);
+        state.gl.setRenderTarget(fboScene);
         state.gl.setClearColor(0xffffff, 0);
         state.gl.clear();
         state.gl.render(scene, camera);
         state.gl.setRenderTarget(null);
         scene.visible = false;
+
+        // split blur, 2 times
+        let fboSrc = fboScene;
+        let fboDst = fbo1;
+        for (let i = 0; i < 2; i++) {
+            screenScene.visible = true;
+            screenScene.overrideMaterial = blurMaterial;
+            blurMaterial.uniforms.u_resolution.value = [fboDst.width, fboDst.height];
+            blurMaterial.uniforms.u_tex.value = fboSrc.texture;
+            blurMaterial.uniforms.u_direction.value = [0.5, 0];
+            state.gl.setRenderTarget(fboDst);
+            state.gl.setClearColor(0xffffff, 0);
+            state.gl.clear();
+            state.gl.render(screenScene, camera);
+            state.gl.setRenderTarget(null);
+            screenScene.visible = false;
+
+            fboSrc = fbo1;
+            fboDst = fbo2;
+
+            screenScene.visible = true;
+            screenScene.overrideMaterial = blurMaterial;
+            blurMaterial.uniforms.u_tex.value = fboSrc.texture;
+            blurMaterial.uniforms.u_direction.value = [0, 0.5];
+            state.gl.setRenderTarget(fboDst);
+            state.gl.setClearColor(0xffffff, 0);
+            state.gl.clear();
+            state.gl.render(screenScene, camera);
+            state.gl.setRenderTarget(null);
+            screenScene.visible = false;
+
+            fboSrc = fbo2;
+            fboDst = fbo1;
+        }
     });
 
     const uniforms = useMemo(
         () => ({
-            u_tex: {
-                value: fbo.texture,
+            u_rawTex: {
+                value: fboScene.texture,
+            },
+            u_blurTex: {
+                value: fbo1.texture,
             },
             u_resolution: {
                 value: [window.innerWidth, window.innerHeight],
+            },
+            u_power: {
+                value: 1,
             },
         }),
         [windowSize]
@@ -309,18 +396,13 @@ export function Home3D() {
             ))} */}
             </scene>
 
-            {/* <scene ref={screenSceneRef} visible={false}>
-                <Plane args={[1, 1]} />
-            </scene> */}
-
-            <Plane args={[60, 34]} position={[52, 13, 20]}>
-                <meshBasicMaterial map={fbo.texture} />
-            </Plane>
+            <scene ref={screenSceneRef} visible={false}>
+                <Plane args={[100, 100]} />
+            </scene>
 
             <Bounds fit clip observe>
                 <Plane args={[100, 100]} position={[52, 13, 30]}>
                     <shaderMaterial vertexShader={baseVertexShader} fragmentShader={finalFragmentShader} uniforms={uniforms} />
-                    {/* <CustomShaderMaterial baseMaterial={MeshBasicMaterial} vertexShader={'void main() { gl_Position = vec4(position, 1.0); }'} map={fbo.texture} /> */}
                 </Plane>
             </Bounds>
         </>
