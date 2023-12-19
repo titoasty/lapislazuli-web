@@ -1,0 +1,251 @@
+@use 'sass:string';
+
+@function autosize($size, $refSize: 1080) {
+    @return 100vh * $size / $refSize;
+}
+
+@mixin center-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@mixin center-absolute {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+}
+
+@mixin full-absolute {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+@mixin full-fixed {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+@mixin background-cover($url) {
+    background-image: url($url);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+@mixin background-contain($url) {
+    background-image: url($url);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+@mixin text-stroke($color: #000, $size: 1px) {
+    text-shadow: -#{$size} -#{$size} 0 $color, 0 -#{$size} 0 $color, #{$size} -#{$size} 0 $color, #{$size} 0 0 $color, #{$size} #{$size} 0 $color, 0 #{$size} 0 $color, -#{$size} #{$size} 0 $color, -#{$size} 0 0 $color;
+}
+
+@mixin font-size($height: 100) {
+    /* font metrics */
+    $fm-capitalHeight: 0.737;
+    $fm-descender: 0.455;
+    $fm-ascender: 0.745;
+    $fm-linegap: 0;
+
+    $distanceBottom: (var(--fm-descender));
+    $distanceTop: (var(--fm-ascender) - var(--fm-capitalHeight));
+
+    $computedSize: $height / $fm-capitalHeight;
+    font-size: $computedSize;
+    margin-top: ($fm-capitalHeight - $fm-ascender) * $computedSize * -1;
+    margin-bottom: $fm-descender * $computedSize * -1;
+}
+
+@mixin mobile {
+    // @media (orientation: portrait) and (max-width: 600px) {
+    @media (orientation: portrait) {
+        @content;
+    }
+}
+
+@mixin desktop {
+    @media (orientation: landscape) {
+        @content;
+    }
+}
+
+@mixin hover {
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            @content;
+        }
+    }
+}
+
+@mixin font-family($name: 'glacial, sans-serif, monospace') {
+    font-family: string.unquote($name);
+}
+
+@mixin font($size: 1.4rem) {
+    font-size: $size;
+    letter-spacing: 0.08 * $size;
+}
+
+@mixin ease($prop: all, $duration: 0.2s, $ease: $easeOutCirc, $delay: 0s) {
+    transition: $prop $duration $ease $delay;
+}
+
+@mixin browser-firefox {
+    @supports (-moz-appearance: none) {
+        @content;
+    }
+}
+
+@mixin browser-chrome {
+    @supports (-webkit-font-smoothing: antialiased) {
+        @content;
+    }
+}
+
+@mixin aspect-ratio($width, $height) {
+    position: relative;
+
+    &:before {
+        display: block;
+        content: '';
+        width: 100%;
+        padding-top: calc($height / $width) * 100%;
+    }
+
+    > .content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+}
+
+@mixin hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@mixin scrollbars {
+    &::-webkit-scrollbar {
+        width: 0.5rem;
+        height: 1rem;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: $main;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: darken($main, 10);
+    }
+
+    &::-moz-scrollbar {
+        width: 0.5rem;
+        height: 1rem;
+    }
+    &::-moz-scrollbar-track {
+        background: transparent;
+    }
+    &::-moz-scrollbar-thumb {
+        background: $main;
+    }
+    &::-moz-scrollbar-thumb:hover {
+        background: darken($main, 10);
+    }
+
+    &::-ms-scrollbar {
+        width: 0.5rem;
+        height: 1rem;
+    }
+    &::-ms-scrollbar-track {
+        background: transparent;
+    }
+    &::-ms-scrollbar-thumb {
+        background: $main;
+    }
+    &::-ms-scrollbar-thumb:hover {
+        background: darken($main, 10);
+    }
+}
+
+@mixin scrollbars-dark {
+    &::-webkit-scrollbar {
+        width: 0.5rem;
+        height: 1rem;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: darken($main, 10);
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: darken($main, 10);
+    }
+
+    &::-moz-scrollbar {
+        width: 0.5rem;
+        height: 1rem;
+    }
+    &::-moz-scrollbar-track {
+        background: transparent;
+    }
+    &::-moz-scrollbar-thumb {
+        background: darken($main, 10);
+    }
+    &::-moz-scrollbar-thumb:hover {
+        background: darken($main, 10);
+    }
+
+    &::-ms-scrollbar {
+        width: 0.5rem;
+        height: 1rem;
+    }
+    &::-ms-scrollbar-track {
+        background: transparent;
+    }
+    &::-ms-scrollbar-thumb {
+        background: darken($main, 10);
+    }
+    &::-ms-scrollbar-thumb:hover {
+        background: darken($main, 10);
+    }
+}
+
+@mixin placeholderColor($color) {
+    &::placeholder {
+        /* Chrome, Firefox, Opera, Safari 10.1+ */
+        color: $color;
+    }
+    &::-ms-input-placeholder {
+        color: $color;
+    }
+}
+
+@mixin size($width, $height, $scale: 1) {
+    width: $width * $scale;
+    height: $height * $scale;
+}
+
+@mixin font-emoji() {
+    font-family: 'Noto Color Emoji';
+}

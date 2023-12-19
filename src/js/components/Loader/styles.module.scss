@@ -1,0 +1,40 @@
+.loader {
+    @include full-fixed;
+    background-color: $white;
+
+    padding: 9.5rem 16rem 15rem 16rem;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    max-width: 128rem;
+}
+
+.lapis {
+    background-image: url('./images/lapis.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 24rem;
+    height: 8.6rem;
+}
+
+.arte {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+
+    background-image: url('./images/arte.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+}

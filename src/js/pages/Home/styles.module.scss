@@ -1,0 +1,30 @@
+.page_home {
+    @include full-fixed;
+    @include center-flex;
+}
+
+.btnEnter {
+    width: 10.4rem;
+    height: 10.4rem;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+
+    @include center-flex;
+
+    padding-left: 0.2rem;
+    box-sizing: border-box;
+
+    font-family: boogy;
+    font-size: 2rem;
+    letter-spacing: 0.2rem;
+    color: $black;
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    &_hidden {
+        pointer-events: none;
+        opacity: 0;
+    }
+}

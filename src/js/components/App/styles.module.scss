@@ -1,0 +1,13 @@
+.app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    > canvas {
+        @include full-absolute;
+    }
+
+    > .content {
+        @include full-absolute;
+    }
+}
