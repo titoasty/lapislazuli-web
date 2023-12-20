@@ -367,7 +367,7 @@ export function Home3D() {
                 value: [window.innerWidth, window.innerHeight],
             },
             u_blurPower: {
-                value: 0,
+                value: 1,
             },
             u_paintingPower: {
                 value: 0,

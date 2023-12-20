@@ -4,6 +4,7 @@
 }
 
 .btnEnter {
+    position: relative;
     width: 10.4rem;
     height: 10.4rem;
     border: 1px solid rgba(0, 0, 0, 0.2);
@@ -21,8 +22,83 @@
 
     pointer-events: all;
 
+    transition: background-color 1s $easeOutExpo, opacity 0.5s $easeOutExpo;
+
     &:hover {
         cursor: pointer;
+        background-color: rgba(0, 0, 0, 1);
+    }
+
+    > div {
+        &:first-of-type {
+            position: absolute;
+            left: 51%;
+            top: 50%;
+            transform: translate3d(-50%, -50%, 0);
+
+            display: flex;
+            flex-flow: row nowrap;
+
+            color: $black;
+
+            overflow: hidden;
+
+            > * {
+                @for $i from 0 through 10 {
+                    &:nth-of-type(#{$i}) {
+                        transition: transform 1s $easeOutExpo calc($i * 0.05s), color 1s $easeOutExpo calc($i * 0.05s);
+                    }
+                }
+            }
+        }
+
+        &:last-of-type {
+            position: absolute;
+            left: 51%;
+            top: 50%;
+            transform: translate3d(-50%, -50%, 0);
+
+            display: flex;
+            flex-flow: row nowrap;
+
+            color: $white;
+
+            overflow: hidden;
+
+            > * {
+                position: relative;
+                display: inline-block;
+                transform: translate3d(0, 100%, 0);
+                color: transparent;
+
+                @for $i from 0 through 10 {
+                    &:nth-of-type(#{$i}) {
+                        transition: transform 1s $easeOutExpo calc($i * 0.05s), color 1s $easeOutExpo calc($i * 0.05s);
+                    }
+                }
+            }
+        }
+    }
+
+    &:hover {
+        > div {
+            &:first-of-type {
+                > * {
+                    position: relative;
+                    display: inline-block;
+                    transform: translate3d(0, -100%, 0);
+                    color: transparent;
+                }
+            }
+            &:last-of-type {
+                > * {
+                    position: relative;
+                    display: inline-block;
+                    transform: translate3d(0, 0, 0);
+                    color: $white;
+                }
+            }
+        }
     }
 
     &_hidden {
