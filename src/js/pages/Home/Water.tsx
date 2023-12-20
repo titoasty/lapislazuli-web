@@ -2,9 +2,9 @@ import { useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { Water as WaterMesh } from 'three/addons/objects/Water.js';
+import WaterMesh from './WaterMesh';
 
-export function Water(props: any) {
+export function Water({ waterObj, ...props }: any) {
     const waternormalsTex = useTexture('/3d/waternormals.jpg');
     waternormalsTex.wrapS = waternormalsTex.wrapT = THREE.RepeatWrapping;
 
@@ -12,15 +12,16 @@ export function Water(props: any) {
         const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
 
         const water = new WaterMesh(waterGeometry, {
-            textureWidth: 512,
-            textureHeight: 512,
+            textureWidth: 1024,
+            textureHeight: 1024,
             waterNormals: waternormalsTex,
             sunDirection: new THREE.Vector3(),
-            sunColor: 0xffffff,
-            waterColor: 0x001e0f,
-            distortionScale: 3.7,
-            // fog: scene.fog !== undefined,
-            // map: objWater.material.map,
+            // sunColor: 0xffffff,
+            // waterColor: 0x001e0f,
+            waterColor: 0xaaffee,
+            distortionScale: 0.5,
+            emissiveMap: waterObj.material.emissiveMap,
+            map: waterObj.material.map,
         });
 
         water.rotation.x = -Math.PI / 2;

@@ -1,4 +1,4 @@
-import { Preload, Stats } from '@react-three/drei';
+import { Box, Preload, Stats } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { AsyncLoader } from 'components/AsyncLoader';
 import { Loader } from 'components/Loader/Loader';

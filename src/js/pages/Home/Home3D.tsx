@@ -1,13 +1,15 @@
-import { Billboard, Bounds, Plane, useFBO, useGLTF } from '@react-three/drei';
+import { Billboard, Box, Plane, ScreenSpace, useFBO, useGLTF, useTexture } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import gsap from 'gsap';
 import useWindowSize from 'hooks/useWindowSize';
-import { useEffect, useMemo, useRef } from 'react';
-import { RawShaderMaterial, Scene, Vector3 } from 'three';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Group, RawShaderMaterial, RepeatWrapping, Scene, Vector3 } from 'three';
 import { H2oLogo } from './H2oLogo';
 import checkpoints from './checkpoints';
 
 import zmooth from 'util/zmooth';
+import { HomeLights } from './HomeLights';
+import { Water } from './Water';
 import baseVertexShader from './base.vert';
 import blurFragmentShader from './blur.frag';
 import blurVertexShader from './blur.vert';
@@ -21,6 +23,7 @@ export function enterVenice() {
 let blurMaterial: RawShaderMaterial;
 const cameraPos = new Vector3();
 const cameraRot = new Vector3();
+let scrollEnabled = false;
 
 const sx = zmooth.val(0, 3);
 const sy = zmooth.val(0, 3);
@@ -36,9 +39,15 @@ export function Home3D() {
         useGLTF('/3d/test_painting1.glb'),
         useGLTF('/3d/test_painting1.glb'),
     ];
+    const noiseTex = useTexture('/3d/noise.png');
+    noiseTex.wrapS = noiseTex.wrapT = RepeatWrapping;
+    const [selectedCheckpoint, setSelectedCheckpoint] = useState<any>(null);
 
     const sceneRef = useRef<Scene>(null);
     const screenSceneRef = useRef<Scene>(null);
+    const paintingSceneRef = useRef<Scene>(null);
+    const paintingGroupRef = useRef<Group>(null);
+    const controlsGroupRef = useRef<Group>(null);
     const w = window.innerWidth * 0.25;
     const h = window.innerHeight * 0.25;
     const fboScene = useFBO({
@@ -46,13 +55,15 @@ export function Home3D() {
     });
     const fbo1 = useFBO(w, h);
     const fbo2 = useFBO(w, h);
+    const fboPainting = useFBO({
+        samples: 4,
+    });
 
     useEffect(() => {
         cameraPos.set(52, 6, 70);
         cameraRot.set(0.12, 0, 0);
 
         let currIdx = 0;
-        let scrollEnabled = false;
 
         const scrollTo = (id: string) => {
             if (!scrollEnabled) {
@@ -225,7 +236,7 @@ export function Home3D() {
             );
 
             tl.to(
-                uniforms.u_power,
+                uniforms.u_blurPower,
                 {
                     value: 0,
                     duration: 0.5,
@@ -237,12 +248,20 @@ export function Home3D() {
 
         // animEnter();
 
+        // gsap.to(uniforms.u_paintingPower, {
+        //     value: 1,
+        //     duration: 2,
+        //     repeat: -1,
+        //     yoyo: true,
+        //     ease: 'sine.inOut',
+        // });
+
         return () => {
             window.removeEventListener('wheel', onWheel);
         };
     }, []);
 
-    useFrame((state) => {
+    useFrame((state, delta) => {
         if (!blurMaterial) {
             blurMaterial = new RawShaderMaterial({
                 vertexShader: blurVertexShader,
@@ -263,53 +282,73 @@ export function Home3D() {
 
         const scene = sceneRef.current!;
         const screenScene = screenSceneRef.current!;
+        const paintingScene = paintingSceneRef.current!;
         const camera = state.camera;
+        const gl = state.gl;
 
         // update camera
         camera.position.set(cameraPos.x - sx.value * 0.1, cameraPos.y + sy.value * 0.1, cameraPos.z);
         camera.rotation.set(cameraRot.x, cameraRot.y, cameraRot.z);
 
+        uniforms.u_resolution.value = [window.innerWidth, window.innerHeight];
+        uniforms.u_time.value += delta;
+
         // render full scene to FBO
         scene.visible = true;
-        state.gl.setRenderTarget(fboScene);
-        state.gl.setClearColor(0xffffff, 0);
-        state.gl.clear();
-        state.gl.render(scene, camera);
-        state.gl.setRenderTarget(null);
+        gl.setRenderTarget(fboScene);
+        gl.setClearColor(0xffffff, 0);
+        gl.clear();
+        gl.render(scene, camera);
+        gl.setRenderTarget(null);
         scene.visible = false;
 
-        // split blur, 2 times
-        let fboSrc = fboScene;
-        let fboDst = fbo1;
-        for (let i = 0; i < 2; i++) {
-            screenScene.visible = true;
-            screenScene.overrideMaterial = blurMaterial;
-            blurMaterial.uniforms.u_resolution.value = [fboDst.width, fboDst.height];
-            blurMaterial.uniforms.u_tex.value = fboSrc.texture;
-            blurMaterial.uniforms.u_direction.value = [0.5, 0];
-            state.gl.setRenderTarget(fboDst);
-            state.gl.setClearColor(0xffffff, 0);
-            state.gl.clear();
-            state.gl.render(screenScene, camera);
-            state.gl.setRenderTarget(null);
-            screenScene.visible = false;
+        // render single painting
+        if (!!selectedCheckpoint) {
+            paintingScene.visible = true;
+            gl.setRenderTarget(fboPainting);
+            gl.setClearColor(0xffffff, 0);
+            gl.clear();
+            gl.render(paintingScene, camera);
+            gl.setRenderTarget(null);
+            paintingScene.visible = false;
+        }
 
-            fboSrc = fbo1;
-            fboDst = fbo2;
+        // blur whole scene
+        if (uniforms.u_blurPower.value > 0.01) {
+            // split blur, 2 times
+            let fboSrc = fboScene;
+            let fboDst = fbo1;
+            for (let i = 0; i < 2; i++) {
+                screenScene.visible = true;
+                screenScene.overrideMaterial = blurMaterial;
+                blurMaterial.uniforms.u_resolution.value = [fboDst.width, fboDst.height];
+                blurMaterial.uniforms.u_tex.value = fboSrc.texture;
+                blurMaterial.uniforms.u_direction.value = [0.5, 0];
+                gl.setRenderTarget(fboDst);
+                gl.setClearColor(0xffffff, 0);
+                gl.clear();
+                gl.render(screenScene, camera);
+                gl.setRenderTarget(null);
+                screenScene.visible = false;
 
-            screenScene.visible = true;
-            screenScene.overrideMaterial = blurMaterial;
-            blurMaterial.uniforms.u_tex.value = fboSrc.texture;
-            blurMaterial.uniforms.u_direction.value = [0, 0.5];
-            state.gl.setRenderTarget(fboDst);
-            state.gl.setClearColor(0xffffff, 0);
-            state.gl.clear();
-            state.gl.render(screenScene, camera);
-            state.gl.setRenderTarget(null);
-            screenScene.visible = false;
+                fboSrc = fbo1;
+                fboDst = fbo2;
 
-            fboSrc = fbo2;
-            fboDst = fbo1;
+                screenScene.visible = true;
+                screenScene.overrideMaterial = blurMaterial;
+                blurMaterial.uniforms.u_resolution.value = [fboDst.width, fboDst.height];
+                blurMaterial.uniforms.u_tex.value = fboSrc.texture;
+                blurMaterial.uniforms.u_direction.value = [0, 0.5];
+                gl.setRenderTarget(fboDst);
+                gl.setClearColor(0xffffff, 0);
+                gl.clear();
+                gl.render(screenScene, camera);
+                gl.setRenderTarget(null);
+                screenScene.visible = false;
+
+                fboSrc = fbo2;
+                fboDst = fbo1;
+            }
         }
     });
 
@@ -319,16 +358,28 @@ export function Home3D() {
                 value: fboScene.texture,
             },
             u_blurTex: {
-                value: fbo1.texture,
+                value: fbo2.texture,
+            },
+            u_paintingTex: {
+                value: fboPainting.texture,
             },
             u_resolution: {
                 value: [window.innerWidth, window.innerHeight],
             },
-            u_power: {
-                value: 1,
+            u_blurPower: {
+                value: 0,
+            },
+            u_paintingPower: {
+                value: 0,
+            },
+            u_noiseTex: {
+                value: noiseTex,
+            },
+            u_time: {
+                value: 0,
             },
         }),
-        [windowSize]
+        []
     );
 
     useFrame((state, delta) => {
@@ -362,12 +413,59 @@ export function Home3D() {
         // camera.rotation.set(0, Math.PI*0.5, 0);
     });
 
+    // useFrame((state, delta) => {
+    //     const group = controlsGroupRef.current!;
+    //     group.rotation.y += 0.5 * delta;
+    // });
+
+    const openPainting = useCallback(
+        (checkpoint: any) => {
+            if (!!selectedCheckpoint) {
+                return;
+            }
+
+            setSelectedCheckpoint(checkpoint);
+            scrollEnabled = false;
+
+            gsap.to(uniforms.u_paintingPower, {
+                value: 1,
+                duration: 0.8,
+                ease: 'sine.in',
+            });
+
+            const group = paintingGroupRef.current!;
+
+            group.position.x = checkpoint.position[0] + checkpoint.anchor.position[0];
+            group.position.y = checkpoint.position[1] + checkpoint.anchor.position[1];
+            group.position.z = checkpoint.position[2] + checkpoint.anchor.position[2];
+            group.rotation.set(checkpoint.anchor.rotation[0], checkpoint.anchor.rotation[1], checkpoint.anchor.rotation[2]);
+
+            gsap.to(group.position, {
+                x: group.position.x - 2,
+                duration: 1,
+                ease: 'back.inOut(2)',
+            });
+
+            const scale = 1.3;
+            // gsap.to(group.scale, {
+            //     x: scale,
+            //     y: scale,
+            //     z: scale,
+            //     duration: 1,
+            //     ease: 'sine.inOut',
+            // });
+        },
+        [selectedCheckpoint]
+    );
+
     return (
         <>
             <scene ref={sceneRef} visible={false}>
-                <ambientLight color={[1, 1, 1]} />
-                <primitive object={obj.nodes.Water} />
-                {/* <Water position={[0, obj.nodes.Water.position.y, 0]} /> */}
+                <HomeLights />
+
+                {/* <primitive object={obj.nodes.Water} /> */}
+                <Water waterObj={obj.nodes.Water} position={[0, obj.nodes.Water.position.y, 0]} />
+
                 <primitive object={obj.nodes.Skysphere} />
                 <primitive object={obj.nodes.LeftArcades} />
                 <primitive object={obj.nodes.RightArcades} />
@@ -379,32 +477,71 @@ export function Home3D() {
                 {checkpoints
                     .filter((checkpoint) => !!checkpoint.anchor)
                     .map((checkpoint) => (
-                        <primitive
-                            key={checkpoint.id}
-                            object={paintings[checkpoint.anchor?.index].scene} //
-                            position={[
-                                checkpoint.position[0] + checkpoint.anchor.position[0], //
-                                checkpoint.position[1] + checkpoint.anchor.position[1],
-                                checkpoint.position[2] + checkpoint.anchor.position[2],
-                            ]}
-                            rotation={checkpoint.anchor.rotation}
-                            scale={checkpoint.anchor.scale}
-                        />
+                        <Fragment key={checkpoint.id}>
+                            <primitive
+                                object={paintings[checkpoint.anchor?.index].scene} //
+                                position={[
+                                    checkpoint.position[0] + checkpoint.anchor.position[0], //
+                                    checkpoint.position[1] + checkpoint.anchor.position[1],
+                                    checkpoint.position[2] + checkpoint.anchor.position[2],
+                                ]}
+                                rotation={checkpoint.anchor.rotation}
+                                scale={checkpoint.anchor.scale}
+                                onClick={(e) => console.log('click!')}
+                            />
+                            <Box
+                                args={[3, 3, 1]}
+                                position={[
+                                    checkpoint.position[0] + checkpoint.anchor.position[0], //
+                                    checkpoint.position[1] + checkpoint.anchor.position[1] + 1.2,
+                                    checkpoint.position[2] + checkpoint.anchor.position[2],
+                                ]}
+                                rotation={checkpoint.anchor.rotation}
+                                onClick={(e) => openPainting(checkpoint)}
+                            >
+                                <meshBasicMaterial color={[0, 1, 0]} visible={false} />
+                            </Box>
+                        </Fragment>
                     ))}
                 {/* {checkpoints.map((checkpoint, idx) => (
                 <Box key={idx} args={[1, 1, 1]} position={checkpoint.position} />
             ))} */}
             </scene>
 
+            <scene ref={paintingSceneRef} visible={false}>
+                <HomeLights />
+
+                <group ref={paintingGroupRef}>
+                    <group ref={controlsGroupRef}>
+                        {selectedCheckpoint && (
+                            <primitive
+                                ref={paintingGroupRef}
+                                object={paintings[selectedCheckpoint.anchor?.index].scene} //
+                                position={[0, 0, 0]}
+                                rotation={[0, 0, 0]}
+                                // position={[
+                                //     selectedCheckpoint.position[0] + selectedCheckpoint.anchor.position[0], //
+                                //     selectedCheckpoint.position[1] + selectedCheckpoint.anchor.position[1],
+                                //     selectedCheckpoint.position[2] + selectedCheckpoint.anchor.position[2],
+                                // ]}
+                                // rotation={selectedCheckpoint.anchor.rotation}
+                                scale={selectedCheckpoint.anchor.scale}
+                                onClick={(e) => console.log('click!')}
+                            />
+                        )}
+                    </group>
+                </group>
+            </scene>
+
             <scene ref={screenSceneRef} visible={false}>
                 <Plane args={[100, 100]} />
             </scene>
 
-            <Bounds fit clip observe>
-                <Plane args={[100, 100]} position={[52, 13, 30]}>
+            <ScreenSpace>
+                <Plane args={[100, 100]}>
                     <shaderMaterial vertexShader={baseVertexShader} fragmentShader={finalFragmentShader} uniforms={uniforms} />
                 </Plane>
-            </Bounds>
+            </ScreenSpace>
         </>
     );
 }

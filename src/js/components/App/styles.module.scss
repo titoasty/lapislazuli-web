@@ -5,9 +5,11 @@
 
     > canvas {
         @include full-absolute;
+        pointer-events: all;
     }
 
     > .content {
         @include full-absolute;
+        pointer-events: none;
     }
 }
