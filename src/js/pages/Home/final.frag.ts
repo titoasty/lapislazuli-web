@@ -9,6 +9,7 @@ uniform float u_blurPower;
 uniform float u_paintingPower;
 uniform sampler2D u_noiseTex;
 uniform float u_time;
+uniform float u_showPainting;
 
 #define clamp01(a) clamp((a), 0.0, 1.0)
 #define PI 3.14159265359
@@ -85,7 +86,9 @@ void main() {
     gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(255.0/255.0, 246.0/255.0, 250.0/255.0), fadeColorPower);
     
     vec4 paintingColor = texture2D(u_paintingTex, gl_FragCoord.xy / u_resolution);
-    gl_FragColor.rgb = gl_FragColor.rgb*(1.0-paintingColor.a) + paintingColor.rgb*paintingColor.a;
+    if(u_showPainting > 0.5) {
+        gl_FragColor.rgb = gl_FragColor.rgb*(1.0-paintingColor.a) + paintingColor.rgb*paintingColor.a;
+    }
 
     #include <tonemapping_fragment>
 	#include <colorspace_fragment>

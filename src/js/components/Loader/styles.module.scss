@@ -8,6 +8,25 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
+    &_hidden {
+        transition: opacity 0.3s $easeInCirc 0.7s;
+        opacity: 0;
+        pointer-events: none;
+
+        .lapis {
+            transform: translate3d(0, -100%, 0);
+            transition: transform 0.5s $easeInCirc;
+        }
+        .percent {
+            transform: translate3d(100%, 0, 0);
+            transition: transform 0.5s $easeInCirc 0.2s;
+        }
+        .arte {
+            transform: translate3d(0, 100%, 0);
+            transition: transform 0.5s $easeInCirc 0.4s;
+        }
+    }
 }
 
 .content {
@@ -16,6 +35,8 @@
     height: 100%;
 
     max-width: 128rem;
+
+    overflow: hidden;
 }
 
 .lapis {
@@ -37,4 +58,13 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center bottom;
+}
+
+.percent {
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-family: boogy;
+    font-weight: bold;
+    font-size: 10rem;
 }

@@ -8,6 +8,8 @@ const useMyStore = create<StoreState>()((set) => ({
     setMute: (mute: boolean) => set(() => ({ mute })),
     loaded: false,
     setLoaded: (loaded: boolean) => set(() => ({ loaded })),
+    loadedPercent: 0,
+    setLoadedPercent: (loadedPercent: number) => set(() => ({ loadedPercent })),
 }));
 
 export default useMyStore;

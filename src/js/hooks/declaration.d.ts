@@ -8,4 +8,6 @@ type StoreState = {
     setMute: (value: boolean) => void;
     loaded: boolean;
     setLoaded: (value: boolean) => void;
+    loadedPercent: number;
+    setLoadedPercent: (value: number) => void;
 };

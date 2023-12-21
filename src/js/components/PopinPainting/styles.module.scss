@@ -1,0 +1,52 @@
+.popinPainting {
+    @include full-fixed;
+
+    &_hidden {
+        pointer-events: none;
+        opacity: 0;
+    }
+
+    .btnClose {
+        position: absolute;
+        left: 3.2rem;
+        top: 3.2rem;
+        width: 2.4rem;
+        height: 2.4rem;
+
+        pointer-events: all;
+        cursor: pointer;
+
+        &:before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate3d(-50%, -50%, 0) rotate(45deg);
+            width: 90%;
+            height: 1px;
+            background-color: $black;
+
+            transition: width 0.7s $easeOutExpo;
+        }
+
+        &:after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate3d(-50%, -50%, 0) rotate(-45deg);
+            width: 90%;
+            height: 1px;
+            background-color: $black;
+
+            transition: width 0.7s $easeOutExpo;
+        }
+
+        &:hover {
+            &:before,
+            &:after {
+                width: 100%;
+            }
+        }
+    }
+}

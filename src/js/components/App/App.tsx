@@ -1,8 +1,9 @@
-import { Box, Preload, Stats } from '@react-three/drei';
+import { Preload, Stats } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { AsyncLoader } from 'components/AsyncLoader';
 import { Loader } from 'components/Loader/Loader';
 import { Logo } from 'components/Logo/Logo';
+import { PopinPainting } from 'components/PopinPainting/PopinPainting';
 import useLoaded from 'hooks/useLoaded';
 import { Home } from 'pages/Home/Home';
 import { Home3D } from 'pages/Home/Home3D';
@@ -11,7 +12,7 @@ import { NoToneMapping } from 'three';
 import styles from './styles.module.scss';
 
 export function App() {
-    const [loaded] = useLoaded();
+    const { loaded } = useLoaded();
 
     return (
         <div className={styles.app}>
@@ -25,7 +26,7 @@ export function App() {
             >
                 <AsyncLoader />
                 <Home3D />
-                <Stats />
+                {/* <Stats /> */}
                 <Preload all />
             </Canvas>
             {loaded && (
@@ -38,7 +39,8 @@ export function App() {
                     </BrowserRouter>
                 </div>
             )}
-            {!loaded && <Loader />}
+            <PopinPainting />
+            <Loader />
         </div>
     );
 }

@@ -10,4 +10,13 @@
     background-repeat: no-repeat;
 
     cursor: pointer;
+    pointer-events: all;
+
+    transition: opacity 0.5s $easeOutCirc;
+
+    &_hidden {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s $easeInCirc;
+    }
 }

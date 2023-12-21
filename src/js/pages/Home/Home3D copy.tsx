@@ -2,8 +2,8 @@ import { Billboard, Box, Plane, ScreenSpace, useFBO, useGLTF, useTexture } from 
 import { useFrame, useThree } from '@react-three/fiber';
 import gsap from 'gsap';
 import useWindowSize from 'hooks/useWindowSize';
-import { Fragment, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Group, RawShaderMaterial, RepeatWrapping, Scene, Vector3 } from 'three';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Group, Mesh, RawShaderMaterial, RepeatWrapping, Scene, Vector3 } from 'three';
 import { H2oLogo } from './H2oLogo';
 import checkpoints from './checkpoints';
 
@@ -32,16 +32,6 @@ let scrollEnabled = false;
 const sx = zmooth.val(0, 3);
 const sy = zmooth.val(0, 3);
 
-function getCheckpointById(id: string) {
-    for (const checkpoint of checkpoints) {
-        if (checkpoint.id == id) {
-            return checkpoint;
-        }
-    }
-
-    return null;
-}
-
 export function Home3D() {
     const windowSize = useWindowSize();
     const obj = useGLTF('/3d/venice.glb');
@@ -69,10 +59,6 @@ export function Home3D() {
     const fboPainting = useFBO({
         samples: 4,
     });
-
-    const paintingRefs: { [key: string]: RefObject<Group> } = {};
-    checkpoints.forEach((checkpoint) => (paintingRefs[checkpoint.id] = useRef<Group>(null)));
-    const paintingRef = useRef<Group>(null);
 
     useEffect(() => {
         cameraPos.set(52, 6, 70);
@@ -296,41 +282,6 @@ export function Home3D() {
             });
         }
 
-        // manage paintings placements
-        // between venise scene & focused scene
-        {
-            if (selectedCheckpoint === null) {
-                // remove painting from focused scene
-                const pr = paintingRef.current!;
-                pr.visible = false;
-                while (pr.children.length > 0) {
-                    pr.remove(pr.children[0]);
-                }
-
-                // put all paintings to their venise scene positions
-                for (const checkpoint of checkpoints) {
-                    if (!checkpoint.anchor) {
-                        continue;
-                    }
-
-                    const group = paintingRefs[checkpoint.id].current!;
-                    if (group.children.length > 0) {
-                        continue;
-                    }
-                    group.add(paintings[checkpoint.anchor.index].scene);
-                }
-            } else {
-                // put painting in focused scene
-                const mesh = paintings[selectedCheckpoint.anchor?.index].scene;
-
-                paintingRef.current!.add(mesh);
-                paintingRef.current!.visible = true;
-
-                const groupRef = paintingRefs[selectedCheckpoint.id];
-                groupRef.current!.remove(mesh);
-            }
-        }
-
         const scene = sceneRef.current!;
         const screenScene = screenSceneRef.current!;
         const paintingScene = paintingSceneRef.current!;
@@ -343,7 +294,6 @@ export function Home3D() {
 
         uniforms.u_resolution.value = [window.innerWidth, window.innerHeight];
         uniforms.u_time.value += delta;
-        uniforms.u_showPainting.value = !!selectedCheckpoint ? 1 : 0;
 
         // render full scene to FBO
         scene.visible = true;
@@ -368,6 +318,7 @@ export function Home3D() {
             gl.setClearColor(0xffffff, 0);
             gl.clear();
             gl.setRenderTarget(null);
+            paintingScene.visible = false;
         }
 
         // blur whole scene
@@ -433,9 +384,6 @@ export function Home3D() {
                 value: noiseTex,
             },
             u_time: {
-                value: 0,
-            },
-            u_showPainting: {
                 value: 0,
             },
         }),
@@ -567,14 +515,14 @@ export function Home3D() {
                 </Billboard>
                 {checkpoints
                     .filter((checkpoint) => !!checkpoint.anchor)
-                    // .filter((checkpoint) => checkpoint != selectedCheckpoint)
+                    .filter((checkpoint) => checkpoint != selectedCheckpoint)
                     .map((checkpoint) => {
                         const isScrollOn = checkpoints[idxScroll] == checkpoint;
 
                         return (
                             <Fragment key={checkpoint.id}>
-                                <group
-                                    ref={paintingRefs[checkpoint.id]}
+                                <primitive
+                                    object={paintings[checkpoint.anchor?.index].scene} //
                                     position={[
                                         checkpoint.position[0] + checkpoint.anchor.position[0], //
                                         checkpoint.position[1] + checkpoint.anchor.position[1],
@@ -611,13 +559,17 @@ export function Home3D() {
 
                 <group ref={paintingGroupRef}>
                     <group ref={controlsGroupRef}>
-                        <group
-                            ref={paintingRef}
-                            position={[0, 0, 0]}
-                            rotation={[0, 0, 0]}
-                            scale={selectedCheckpoint ? selectedCheckpoint.anchor.scale : [0, 0, 0]}
-                            // onClick={(e) => console.log('click!')}
-                        />
+                        {selectedCheckpoint && (
+                            <primitive
+                                // ref={clonedRef}
+                                object={paintings[selectedCheckpoint.anchor?.index].scene} //
+                                // object={clonedMesh}
+                                position={[0, 0, 0]}
+                                rotation={[0, 0, 0]}
+                                scale={selectedCheckpoint ? selectedCheckpoint.anchor.scale : [0, 0, 0]}
+                                // onClick={(e) => console.log('click!')}
+                            />
+                        )}
                     </group>
                 </group>
             </scene>
