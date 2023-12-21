@@ -10,4 +10,6 @@ type StoreState = {
     setLoaded: (value: boolean) => void;
     loadedPercent: number;
     setLoadedPercent: (value: number) => void;
+    preloaded: boolean;
+    setPreloaded: (value: boolean) => void;
 };

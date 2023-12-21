@@ -14,7 +14,7 @@ let pctLoaded = 0;
 
 export function AsyncLoader() {
     const [preload, setPreload] = useState(false);
-    const { loaded, setLoaded, setLoadedPercent } = useLoaded();
+    const { loaded, setLoaded, setLoadedPercent, setPreloaded } = useLoaded();
     const { active } = useProgress();
     const p = useProgress();
 
@@ -24,6 +24,8 @@ export function AsyncLoader() {
     }, [p]);
 
     useEffect(() => {
+        console.log('ready');
+
         for (const url of assets) {
             const ext = url.split('.').pop();
 
@@ -58,8 +60,9 @@ export function AsyncLoader() {
         }
 
         setTimeout(() => {
+            // setPreloaded(true);
             setLoaded(true);
-        }, 1500);
+        }, 500);
     }, [active, preload]);
 
     return null;
