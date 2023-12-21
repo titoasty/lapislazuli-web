@@ -35,6 +35,7 @@ export function App() {
                     antialias: true,
                     alpha: false,
                 }}
+                dpr={1}
             >
                 <AsyncLoader />
                 {loaded && (
