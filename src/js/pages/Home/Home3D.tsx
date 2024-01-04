@@ -3,14 +3,15 @@ import { useFrame, useThree } from '@react-three/fiber';
 import gsap from 'gsap';
 import useWindowSize from 'hooks/useWindowSize';
 import { Fragment, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Group, RawShaderMaterial, RepeatWrapping, Scene, Vector3 } from 'three';
-import { H2oLogo } from './H2oLogo';
+import { Camera, Group, RawShaderMaterial, RepeatWrapping, Scene, Spherical, Vector3 } from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { H2oLogo } from './H2oLogo/H2oLogo';
 import checkpoints from './checkpoints';
 
 import { setPopinPaintingVisible } from 'components/PopinPainting/PopinPainting';
 import zmooth from 'util/zmooth';
 import { HomeLights } from './HomeLights';
-import { Water } from './Water';
+import { Water } from './Water/Water';
 import baseVertexShader from './base.vert';
 import blurFragmentShader from './blur.frag';
 import blurVertexShader from './blur.vert';
@@ -28,6 +29,12 @@ let blurMaterial: RawShaderMaterial;
 const cameraPos = new Vector3();
 const cameraRot = new Vector3();
 let scrollEnabled = false;
+
+let paintingCamera: Camera;
+let orbitControls: OrbitControls;
+let initialPhi = 0;
+let initialTheta = 0;
+let initialRadius = 0;
 
 const sx = zmooth.val(0, 3);
 const sy = zmooth.val(0, 3);
@@ -356,11 +363,13 @@ export function Home3D() {
 
         // render single painting
         if (!!selectedCheckpoint) {
+            orbitControls?.update();
+
             paintingScene.visible = true;
             gl.setRenderTarget(fboPainting);
             gl.setClearColor(0xffffff, 0);
             gl.clear();
-            gl.render(paintingScene, camera);
+            gl.render(paintingScene, paintingCamera);
             gl.setRenderTarget(null);
             paintingScene.visible = false;
         } else {
@@ -501,10 +510,22 @@ export function Home3D() {
             group.position.z = checkpoint.position[2] + checkpoint.anchor.position[2];
             group.rotation.set(checkpoint.anchor.rotation[0], checkpoint.anchor.rotation[1], checkpoint.anchor.rotation[2]);
 
+            paintingCamera = three.camera.clone();
+
             gsap.to(group.position, {
                 x: group.position.x + (checkpoint.position.x < 52 ? -2 : 2),
                 duration: 1,
                 ease: 'back.inOut(2)',
+                onComplete: () => {
+                    // paintingCamera.position.sub(group.position);
+                    // group.position.set(0, 0, 0);
+                    orbitControls = new OrbitControls(paintingCamera, three.gl.domElement);
+                    orbitControls.target.copy(group.position);
+                    orbitControls.update();
+                    initialPhi = orbitControls.getPolarAngle();
+                    initialTheta = orbitControls.getAzimuthalAngle();
+                    initialRadius = orbitControls.getDistance();
+                },
             });
 
             setPopinPaintingVisible(true);
@@ -535,6 +556,24 @@ export function Home3D() {
                 setSelectedCheckpoint(null);
                 scrollEnabled = true;
                 group.visible = false;
+            },
+        });
+
+        // rotate camera in front of painting
+        const sph = new Spherical();
+        sph.set(orbitControls.getDistance(), orbitControls.getPolarAngle(), orbitControls.getAzimuthalAngle());
+        const target = orbitControls.target.clone();
+        orbitControls = null;
+
+        gsap.to(sph, {
+            phi: initialPhi,
+            theta: initialTheta,
+            radius: initialRadius,
+            duration: 0.4,
+            ease: 'circ.out',
+            onUpdate: () => {
+                paintingCamera.position.setFromSpherical(sph).add(target);
+                paintingCamera.lookAt(target);
             },
         });
 

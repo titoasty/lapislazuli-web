@@ -6,11 +6,11 @@ const checkpoints = [
     },
     {
         id: '1',
-        position: [52.5, 6, 7.6],
+        position: [52.5, 6, 7.7],
         rotation: [0, Math.PI * 0.5, 0],
         anchor: {
             index: 0,
-            position: [-7.5, -1.3, 0.1],
+            position: [-7.5, 0, 0],
             rotation: [0, Math.PI * 0.5, 0],
             scale: [0.037, 0.037, 0.037],
         },

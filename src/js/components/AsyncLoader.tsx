@@ -1,6 +1,7 @@
 import { useGLTF, useProgress, useTexture } from '@react-three/drei';
 import useLoaded from 'hooks/useLoaded';
 import { useEffect, useState } from 'react';
+import { Box3, Group } from 'three';
 
 const assets = [
     '/3d/venice.glb', //
@@ -17,6 +18,17 @@ export function AsyncLoader() {
     const { loaded, setLoaded, setLoadedPercent, setPreloaded } = useLoaded();
     const { active } = useProgress();
     const p = useProgress();
+
+    if (preload && !active) {
+        const gltfs: any = {};
+        assets.filter((asset) => asset.endsWith('.glb')).forEach((url) => (gltfs[url] = useGLTF(url)));
+
+        const obj = gltfs['/3d/test_painting1.glb'].scene;
+        const box = new Box3().setFromObject(obj);
+        obj.position.x = -(box.max.x + box.min.x) / 2;
+        obj.position.y = -(box.max.y + box.min.y) / 2;
+        obj.position.z = -(box.max.z + box.min.z) / 2;
+    }
 
     useEffect(() => {
         pctLoaded = Math.max(pctLoaded, (100 * p.loaded) / (p.total || 1));
@@ -39,7 +51,8 @@ export function AsyncLoader() {
                     break;
                 case 'glb':
                 case 'gltf':
-                    useGLTF.preload(url);
+                    const obj = useGLTF.preload(url);
+                    console.log(obj);
                     break;
                 default:
                     console.log('unknown type', url);

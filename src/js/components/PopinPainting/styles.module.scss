@@ -1,5 +1,6 @@
 .popinPainting {
     @include full-fixed;
+    pointer-events: none;
 
     &_hidden {
         pointer-events: none;
