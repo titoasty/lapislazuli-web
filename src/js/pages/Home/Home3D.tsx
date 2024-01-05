@@ -1,9 +1,9 @@
-import { Billboard, Box, Plane, ScreenSpace, useFBO, useGLTF, useTexture } from '@react-three/drei';
+import { Billboard, Box, Plane, ScreenSpace, useFBO, useGLTF, useHelper, useTexture } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import gsap from 'gsap';
 import useWindowSize from 'hooks/useWindowSize';
 import { Fragment, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Camera, Group, RawShaderMaterial, RepeatWrapping, Scene, Spherical, Vector3 } from 'three';
+import { BoxHelper, Group, PerspectiveCamera, RawShaderMaterial, RepeatWrapping, Scene, Spherical, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { H2oLogo } from './H2oLogo/H2oLogo';
 import checkpoints from './checkpoints';
@@ -11,6 +11,7 @@ import checkpoints from './checkpoints';
 import { setPopinPaintingVisible } from 'components/PopinPainting/PopinPainting';
 import zmooth from 'util/zmooth';
 import { HomeLights } from './HomeLights';
+import Painting3DViewer from './Painting3DViewer';
 import { Water } from './Water/Water';
 import baseVertexShader from './base.vert';
 import blurFragmentShader from './blur.frag';
@@ -30,11 +31,7 @@ const cameraPos = new Vector3();
 const cameraRot = new Vector3();
 let scrollEnabled = false;
 
-let paintingCamera: Camera;
-let orbitControls: OrbitControls;
-let initialPhi = 0;
-let initialTheta = 0;
-let initialRadius = 0;
+let painting3DViewer: Painting3DViewer;
 
 const sx = zmooth.val(0, 3);
 const sy = zmooth.val(0, 3);
@@ -65,7 +62,6 @@ export function Home3D() {
     const screenSceneRef = useRef<Scene>(null);
     const paintingSceneRef = useRef<Scene>(null);
     const paintingGroupRef = useRef<Group>(null);
-    const controlsGroupRef = useRef<Group>(null);
     const w = window.innerWidth * 0.25;
     const h = window.innerHeight * 0.25;
     const fboScene = useFBO({
@@ -73,9 +69,6 @@ export function Home3D() {
     });
     const fbo1 = useFBO(w, h);
     const fbo2 = useFBO(w, h);
-    const fboPainting = useFBO({
-        samples: 4,
-    });
 
     const paintingRefs: { [key: string]: RefObject<Group> } = {};
     checkpoints.forEach((checkpoint) => (paintingRefs[checkpoint.id] = useRef<Group>(null)));
@@ -363,20 +356,7 @@ export function Home3D() {
 
         // render single painting
         if (!!selectedCheckpoint) {
-            orbitControls?.update();
-
-            paintingScene.visible = true;
-            gl.setRenderTarget(fboPainting);
-            gl.setClearColor(0xffffff, 0);
-            gl.clear();
-            gl.render(paintingScene, paintingCamera);
-            gl.setRenderTarget(null);
-            paintingScene.visible = false;
-        } else {
-            gl.setRenderTarget(fboPainting);
-            gl.setClearColor(0xffffff, 0);
-            gl.clear();
-            gl.setRenderTarget(null);
+            painting3DViewer?.update();
         }
 
         // blur whole scene
@@ -427,7 +407,7 @@ export function Home3D() {
                 value: fbo2.texture,
             },
             u_paintingTex: {
-                value: fboPainting.texture,
+                value: null,
             },
             u_resolution: {
                 value: [window.innerWidth, window.innerHeight],
@@ -450,42 +430,6 @@ export function Home3D() {
         }),
         []
     );
-
-    useFrame((state, delta) => {
-        const camera = state.camera;
-
-        // start (fov 32)
-        // camera.position.set(52, 6, 77);
-        // camera.rotation.set(0.12, 0, 0);
-
-        // start (fov 50)
-        // camera.position.set(52, 7, 63);
-        // camera.rotation.set(0.12, 0, 0);
-
-        // start (fov 40)
-        // camera.position.set(52, 6, 70);
-        // camera.rotation.set(0.12, 0, 0);
-
-        // carousel (fov 32)
-        // camera.position.set(52, 4, 0);
-        // camera.rotation.set(0.12, 0, 0);
-
-        // carousel (fov 40)
-        // camera.position.set(52, 4, -2);
-        // camera.rotation.set(0.12, 0, 0);
-
-        // above
-        // camera.position.set(52, 130, 10);
-        // camera.rotation.set(-Math.PI * 0.5, 0, 0);
-
-        // camera.position.set(58, 8, 8);
-        // camera.rotation.set(0, Math.PI*0.5, 0);
-    });
-
-    // useFrame((state, delta) => {
-    //     const group = controlsGroupRef.current!;
-    //     group.rotation.y += 0.5 * delta;
-    // });
 
     const openPainting = useCallback(
         (checkpoint: any) => {
@@ -510,23 +454,8 @@ export function Home3D() {
             group.position.z = checkpoint.position[2] + checkpoint.anchor.position[2];
             group.rotation.set(checkpoint.anchor.rotation[0], checkpoint.anchor.rotation[1], checkpoint.anchor.rotation[2]);
 
-            paintingCamera = three.camera.clone();
-
-            gsap.to(group.position, {
-                x: group.position.x + (checkpoint.position.x < 52 ? -2 : 2),
-                duration: 1,
-                ease: 'back.inOut(2)',
-                onComplete: () => {
-                    // paintingCamera.position.sub(group.position);
-                    // group.position.set(0, 0, 0);
-                    orbitControls = new OrbitControls(paintingCamera, three.gl.domElement);
-                    orbitControls.target.copy(group.position);
-                    orbitControls.update();
-                    initialPhi = orbitControls.getPolarAngle();
-                    initialTheta = orbitControls.getAzimuthalAngle();
-                    initialRadius = orbitControls.getDistance();
-                },
-            });
+            painting3DViewer = new Painting3DViewer(three.gl, three.camera as PerspectiveCamera, paintingSceneRef.current!, group, three.gl.domElement);
+            uniforms.u_paintingTex.value = painting3DViewer.texture;
 
             setPopinPaintingVisible(true);
         },
@@ -542,11 +471,11 @@ export function Home3D() {
 
         const group = paintingGroupRef.current!;
 
-        gsap.to(group.position, {
-            x: checkpoint.position[0] + checkpoint.anchor.position[0],
-            duration: 1,
-            ease: 'back.inOut(2)',
-        });
+        // gsap.to(group.position, {
+        //     x: checkpoint.position[0] + checkpoint.anchor.position[0],
+        //     duration: 0.8,
+        //     ease: 'back.inOut(2)',
+        // });
 
         gsap.to(uniforms.u_paintingPower, {
             value: 0,
@@ -559,23 +488,7 @@ export function Home3D() {
             },
         });
 
-        // rotate camera in front of painting
-        const sph = new Spherical();
-        sph.set(orbitControls.getDistance(), orbitControls.getPolarAngle(), orbitControls.getAzimuthalAngle());
-        const target = orbitControls.target.clone();
-        orbitControls = null;
-
-        gsap.to(sph, {
-            phi: initialPhi,
-            theta: initialTheta,
-            radius: initialRadius,
-            duration: 0.4,
-            ease: 'circ.out',
-            onUpdate: () => {
-                paintingCamera.position.setFromSpherical(sph).add(target);
-                paintingCamera.lookAt(target);
-            },
-        });
+        painting3DViewer?.hide();
 
         setPopinPaintingVisible(false);
     }, [selectedCheckpoint, paintingGroupRef.current]);
@@ -620,14 +533,13 @@ export function Home3D() {
                                         checkpoint.position[2] + checkpoint.anchor.position[2],
                                     ]}
                                     rotation={checkpoint.anchor.rotation}
-                                    scale={checkpoint.anchor.scale}
                                     // visible={selectedCheckpoint != checkpoint}
                                 />
                                 <Box
                                     args={[3, 3, 1]}
                                     position={[
                                         checkpoint.position[0] + checkpoint.anchor.position[0], //
-                                        checkpoint.position[1] + checkpoint.anchor.position[1] + 1.2,
+                                        checkpoint.position[1] + checkpoint.anchor.position[1],
                                         checkpoint.position[2] + checkpoint.anchor.position[2],
                                     ]}
                                     rotation={checkpoint.anchor.rotation}
@@ -649,15 +561,7 @@ export function Home3D() {
                 <HomeLights />
 
                 <group ref={paintingGroupRef}>
-                    <group ref={controlsGroupRef}>
-                        <group
-                            ref={paintingRef}
-                            position={[0, 0, 0]}
-                            rotation={[0, 0, 0]}
-                            scale={selectedCheckpoint ? selectedCheckpoint.anchor.scale : [0, 0, 0]}
-                            // onClick={(e) => console.log('click!')}
-                        />
-                    </group>
+                    <group ref={paintingRef} />
                 </group>
             </scene>
 

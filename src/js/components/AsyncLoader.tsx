@@ -1,7 +1,7 @@
 import { useGLTF, useProgress, useTexture } from '@react-three/drei';
 import useLoaded from 'hooks/useLoaded';
 import { useEffect, useState } from 'react';
-import { Box3, Group } from 'three';
+import { Box3 } from 'three';
 
 const assets = [
     '/3d/venice.glb', //
@@ -24,10 +24,21 @@ export function AsyncLoader() {
         assets.filter((asset) => asset.endsWith('.glb')).forEach((url) => (gltfs[url] = useGLTF(url)));
 
         const obj = gltfs['/3d/test_painting1.glb'].scene;
-        const box = new Box3().setFromObject(obj);
-        obj.position.x = -(box.max.x + box.min.x) / 2;
-        obj.position.y = -(box.max.y + box.min.y) / 2;
-        obj.position.z = -(box.max.z + box.min.z) / 2;
+        if (!obj.userData.initialized) {
+            obj.userData.initialized = true;
+
+            // rescale
+            const box = new Box3().setFromObject(obj);
+            const maxSize = Math.max(box.max.x - box.min.x, Math.min(box.max.y - box.min.y, box.max.z - box.min.z));
+            const scale = 2.9 / maxSize;
+            obj.scale.set(scale, scale, scale);
+
+            // recenter
+            box.setFromObject(obj);
+            obj.position.x = -(box.max.x + box.min.x) / 2;
+            obj.position.y = -(box.max.y + box.min.y) / 2;
+            obj.position.z = -(box.max.z + box.min.z) / 2;
+        }
     }
 
     useEffect(() => {
@@ -36,7 +47,7 @@ export function AsyncLoader() {
     }, [p]);
 
     useEffect(() => {
-        console.log('ready');
+        console.log('preload');
 
         for (const url of assets) {
             const ext = url.split('.').pop();
@@ -51,8 +62,7 @@ export function AsyncLoader() {
                     break;
                 case 'glb':
                 case 'gltf':
-                    const obj = useGLTF.preload(url);
-                    console.log(obj);
+                    useGLTF.preload(url);
                     break;
                 default:
                     console.log('unknown type', url);
