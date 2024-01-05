@@ -17,6 +17,13 @@
     transform: translate3d(-50%, -50%, 0);
 }
 
+@mixin center-fixed {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+}
+
 @mixin full-absolute {
     position: absolute;
     left: 0;

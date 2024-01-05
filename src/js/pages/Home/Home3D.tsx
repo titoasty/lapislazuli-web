@@ -1,10 +1,9 @@
-import { Billboard, Box, Plane, ScreenSpace, useFBO, useGLTF, useHelper, useTexture } from '@react-three/drei';
+import { Billboard, Box, Plane, ScreenSpace, useFBO, useGLTF, useTexture } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import gsap from 'gsap';
 import useWindowSize from 'hooks/useWindowSize';
 import { Fragment, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BoxHelper, Group, PerspectiveCamera, RawShaderMaterial, RepeatWrapping, Scene, Spherical, Vector3 } from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Group, Mesh, PerspectiveCamera, RawShaderMaterial, RepeatWrapping, Scene, Vector3 } from 'three';
 import { H2oLogo } from './H2oLogo/H2oLogo';
 import checkpoints from './checkpoints';
 
@@ -47,7 +46,6 @@ function getCheckpointById(id: string) {
 }
 
 export function Home3D() {
-    const windowSize = useWindowSize();
     const obj = useGLTF('/3d/venice.glb');
     const three = useThree();
     const paintings = [
@@ -62,17 +60,17 @@ export function Home3D() {
     const screenSceneRef = useRef<Scene>(null);
     const paintingSceneRef = useRef<Scene>(null);
     const paintingGroupRef = useRef<Group>(null);
+    const paintingRefs: { [key: string]: RefObject<Group> } = {};
+    checkpoints.forEach((checkpoint) => (paintingRefs[checkpoint.id] = useRef<Group>(null)));
+    const paintingRef = useRef<Group>(null);
+
     const w = window.innerWidth * 0.25;
     const h = window.innerHeight * 0.25;
     const fboScene = useFBO({
         samples: 4,
     });
-    const fbo1 = useFBO(w, h);
-    const fbo2 = useFBO(w, h);
-
-    const paintingRefs: { [key: string]: RefObject<Group> } = {};
-    checkpoints.forEach((checkpoint) => (paintingRefs[checkpoint.id] = useRef<Group>(null)));
-    const paintingRef = useRef<Group>(null);
+    const fboBlur1 = useFBO(w, h);
+    const fboBlur2 = useFBO(w, h);
 
     useEffect(() => {
         cameraPos.set(52, 6, 70);
@@ -284,10 +282,10 @@ export function Home3D() {
                 fragmentShader: blurFragmentShader,
                 uniforms: {
                     u_tex: {
-                        value: fbo1.texture,
+                        value: fboBlur1.texture,
                     },
                     u_resolution: {
-                        value: [fbo1.width, fbo1.height],
+                        value: [fboBlur1.width, fboBlur1.height],
                     },
                     u_direction: {
                         value: [1, 0],
@@ -363,7 +361,7 @@ export function Home3D() {
         if (uniforms.u_blurPower.value > 0.01) {
             // split blur, 2 times
             let fboSrc = fboScene;
-            let fboDst = fbo1;
+            let fboDst = fboBlur1;
             for (let i = 0; i < 2; i++) {
                 screenScene.visible = true;
                 screenScene.overrideMaterial = blurMaterial;
@@ -377,8 +375,8 @@ export function Home3D() {
                 gl.setRenderTarget(null);
                 screenScene.visible = false;
 
-                fboSrc = fbo1;
-                fboDst = fbo2;
+                fboSrc = fboBlur1;
+                fboDst = fboBlur2;
 
                 screenScene.visible = true;
                 screenScene.overrideMaterial = blurMaterial;
@@ -392,8 +390,8 @@ export function Home3D() {
                 gl.setRenderTarget(null);
                 screenScene.visible = false;
 
-                fboSrc = fbo2;
-                fboDst = fbo1;
+                fboSrc = fboBlur2;
+                fboDst = fboBlur1;
             }
         }
     });
@@ -404,7 +402,7 @@ export function Home3D() {
                 value: fboScene.texture,
             },
             u_blurTex: {
-                value: fbo2.texture,
+                value: fboBlur2.texture,
             },
             u_paintingTex: {
                 value: null,
@@ -454,7 +452,8 @@ export function Home3D() {
             group.position.z = checkpoint.position[2] + checkpoint.anchor.position[2];
             group.rotation.set(checkpoint.anchor.rotation[0], checkpoint.anchor.rotation[1], checkpoint.anchor.rotation[2]);
 
-            painting3DViewer = new Painting3DViewer(three.gl, three.camera as PerspectiveCamera, paintingSceneRef.current!, group, three.gl.domElement);
+            painting3DViewer = new Painting3DViewer(three.gl, three.camera as PerspectiveCamera, paintingSceneRef.current!, group, three.gl.domElement, document.getElementById('paintingFrame'));
+            // painting3DViewer = new Painting3DViewer(three.gl, three.camera as PerspectiveCamera, paintingSceneRef.current!, boxRef.current!, three.gl.domElement);
             uniforms.u_paintingTex.value = painting3DViewer.texture;
 
             setPopinPaintingVisible(true);
@@ -500,6 +499,8 @@ export function Home3D() {
     const hideCursorPointer = useCallback(() => {
         document.body.style.cursor = '';
     }, []);
+
+    const boxRef = useRef<Mesh>(null);
 
     return (
         <>

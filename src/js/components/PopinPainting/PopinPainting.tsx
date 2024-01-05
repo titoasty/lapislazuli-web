@@ -20,8 +20,13 @@ export function PopinPainting() {
     }, []);
 
     return (
-        <div className={classnames(styles.popinPainting, !visible && styles.popinPainting_hidden)} id="popin-painting">
-            <div className={styles.btnClose} onClick={close} />
-        </div>
+        <>
+            <div id="paintingFrame">
+                <div />
+            </div>
+            <div className={classnames(styles.popinPainting, !visible && styles.popinPainting_hidden)} id="popin-painting">
+                <div className={styles.btnClose} onClick={close} />
+            </div>
+        </>
     );
 }

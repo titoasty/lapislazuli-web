@@ -51,3 +51,21 @@
         }
     }
 }
+
+:global {
+    #paintingFrame {
+        pointer-events: none;
+
+        @include center-fixed;
+        width: calc(100vw - 30rem);
+        height: calc(100vh - 30rem);
+        // background-color: rgba(0, 255, 0, 0.5);
+
+        > div {
+            @include center-absolute;
+            width: 0;
+            height: 0;
+            // background-color: rgba(255, 0, 0, 0.5);
+        }
+    }
+}
