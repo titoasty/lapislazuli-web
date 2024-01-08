@@ -1,0 +1,41 @@
+.menu {
+    position: fixed;
+    right: 3.2rem;
+    top: 2.7rem;
+
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    > * {
+        margin-left: 5.6rem;
+    }
+
+    a {
+        color: #252322;
+        text-align: right;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.67);
+        font-family: boogy;
+        font-size: 1.9rem;
+    }
+
+    .search {
+        position: relative;
+        width: 4rem;
+        height: 4rem;
+
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+
+        &:after {
+            content: '';
+            position: absolute;
+            left: 20%;
+            top: 20%;
+            right: 20%;
+            bottom: 20%;
+            background-image: url('./images/search.svg');
+            background-size: cover;
+        }
+    }
+}

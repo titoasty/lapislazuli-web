@@ -3,10 +3,11 @@ import { Canvas } from '@react-three/fiber';
 import { AsyncLoader } from 'components/AsyncLoader';
 import { Loader } from 'components/Loader/Loader';
 import { Logo } from 'components/Logo/Logo';
+import { Menu } from 'components/Menu/Menu';
 import { PopinPainting } from 'components/PopinPainting/PopinPainting';
 import useLoaded from 'hooks/useLoaded';
+import { Events } from 'pages/Events/Events';
 import { Home } from 'pages/Home/Home';
-import { Home3D } from 'pages/Home/Home3D';
 import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { NoToneMapping } from 'three';
@@ -28,36 +29,39 @@ export function App() {
 
     return (
         <div className={styles.app}>
-            <Canvas //
-                camera={{ fov: 40 }}
-                gl={{
-                    toneMapping: NoToneMapping, //
-                    antialias: true,
-                    alpha: false,
-                }}
-                dpr={1}
-            >
-                <AsyncLoader />
+            <BrowserRouter>
+                <Canvas //
+                    camera={{ fov: 40 }}
+                    gl={{
+                        toneMapping: NoToneMapping, //
+                        antialias: true,
+                        alpha: false,
+                    }}
+                    dpr={1}
+                >
+                    <color attach="background" args={['white']} />
+                    <AsyncLoader />
+                    {loaded && (
+                        <>
+                            {/* <Home3D /> */}
+                            <Preload all />
+                        </>
+                    )}
+                    {/* <Stats /> */}
+                </Canvas>
                 {loaded && (
-                    <>
-                        <Home3D />
-                        <Preload all />
-                    </>
-                )}
-                {/* <Stats /> */}
-            </Canvas>
-            {loaded && (
-                <div className={styles.content}>
-                    <BrowserRouter>
+                    <div className={styles.content}>
                         <Routes>
                             <Route index element={<Home />} />
+                            <Route path="/events" element={<Events />} />
                         </Routes>
                         <Logo />
-                    </BrowserRouter>
-                </div>
-            )}
-            <PopinPainting />
-            <Loader />
+                    </div>
+                )}
+                <PopinPainting />
+                <Menu />
+                <Loader />
+            </BrowserRouter>
         </div>
     );
 }

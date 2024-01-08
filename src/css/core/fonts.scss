@@ -11,5 +11,5 @@
 }
 
 // @include font('glacialindifference-regular', 'glacial');
-@include font('BoogyBrut-Regular', 'boogy');
-@include font('BoogyBrut-Bold', 'boogy', 'normal', 'bold');
+@include font('BoogyBrut-Regular', 'boogy', 'normal', 400);
+@include font('BoogyBrut-Bold', 'boogy', 'normal', 700);
