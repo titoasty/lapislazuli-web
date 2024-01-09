@@ -51,7 +51,7 @@ export const AnimatedPage = forwardRef(function ({ name, className, hiddenClassN
     );
 });
 
-export function animateSlides(visible: boolean, elt: HTMLElement, slideClassName: string, slideContentClassName: string) {
+export function animateSlides(visible: boolean = false, elt: HTMLElement, slideClassName: string, slideContentClassName: string) {
     const slides = elt.getElementsByClassName(slideClassName);
 
     const visibleSlides: any[] = [];

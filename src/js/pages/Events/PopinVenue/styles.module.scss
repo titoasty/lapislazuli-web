@@ -4,6 +4,8 @@
 
     background-color: green;
 
+    transition: opacity 0.7s $easeInSine;
+
     &_hidden {
         opacity: 0;
         transition: opacity 0.7s $easeInSine;

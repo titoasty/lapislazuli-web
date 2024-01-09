@@ -1,6 +1,7 @@
-import { AnimatedPage, animateSlides } from 'components/AnimatedsPage/AnimatedPage';
+import { animateSlides } from 'components/AnimatedsPage/AnimatedPage';
 import { FullSlider } from 'components/FullSlider/FullSlider';
-import { useCallback, useRef } from 'react';
+import { VisibleDiv } from 'components/VisibleDiv/VisibleDiv';
+import { useEffect, useRef } from 'react';
 import styles from './styles.module.scss';
 
 const venueData = [
@@ -29,20 +30,12 @@ interface PopinVenueProps {
 export function PopinVenue({ visible, close }: PopinVenueProps) {
     const rootRef = useRef<HTMLDivElement>(null);
 
-    const onAnimationStart = useCallback((visible: boolean) => {
+    useEffect(() => {
         animateSlides(visible, rootRef.current!, styles.slide, styles.slide_content);
-    }, []);
-
-    console.log(styles.popinVenue_hidden);
+    }, [visible]);
 
     return (
-        <AnimatedPage //
-            name="popinVenue"
-            ref={rootRef}
-            className={styles.popinVenue}
-            hiddenClassName={styles.popinVenue_hidden}
-            onAnimationStart={onAnimationStart}
-        >
+        <VisibleDiv visible={visible} ref={rootRef} className={styles.popinVenue} hiddenClassName={styles.popinVenue_hidden}>
             <FullSlider
                 slideClassName={styles.slide}
                 slides={venueData.map((data) => ({
@@ -62,6 +55,6 @@ export function PopinVenue({ visible, close }: PopinVenueProps) {
                     </div>
                 }
             />
-        </AnimatedPage>
+        </VisibleDiv>
     );
 }

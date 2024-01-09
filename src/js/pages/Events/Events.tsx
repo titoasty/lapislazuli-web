@@ -1,8 +1,9 @@
-import { AnimatedPage, animateSlides } from 'components/AnimatedsPage/AnimatedPage';
+import { animateSlides } from 'components/AnimatedsPage/AnimatedPage';
 import { FullSlider } from 'components/FullSlider/FullSlider';
-import { AnimatePresence } from 'framer-motion';
+import { Page } from 'components/Page';
+import { VisibleDiv } from 'components/VisibleDiv/VisibleDiv';
 import useAppData from 'hooks/useAppData';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -18,6 +19,7 @@ export function Events() {
     const [venueVisible, setVenueVisible] = useState(false);
     const [artworksVisible, setArtworksVisible] = useState(false);
     const events = useAppData().events;
+    const [pageVisible, setPageVisible] = useState(false);
 
     const openDrawer = useCallback((evt: any, swiper: any, slideIndex: number, event: EventData) => {
         swiper.slideTo(slideIndex);
@@ -46,20 +48,19 @@ export function Events() {
         setArtworksVisible(false);
     }, []);
 
-    const onAnimationStart = useCallback((visible: boolean) => {
+    useEffect(() => {
+        const visible = pageVisible && !venueVisible;
         animateSlides(visible, rootRef.current!, styles.slide, styles.slide_content);
-    }, []);
+    }, [pageVisible, venueVisible]);
 
     return (
-        <AnimatedPage //
+        <Page //
             ref={rootRef}
             name="events"
-            className={styles.page_events}
-            hiddenClassName={styles.page_events_hidden}
-            onAnimationStart={onAnimationStart}
+            onVisibleChange={setPageVisible}
         >
-            <AnimatePresence>
-                {!venueVisible && (
+            <div className={styles.page_events}>
+                <VisibleDiv visible={pageVisible && !venueVisible} className={styles.content} hiddenClassName={styles.content_hidden}>
                     <FullSlider
                         slideClassName={styles.slide}
                         spaceBetween={40}
@@ -84,12 +85,12 @@ export function Events() {
                             ),
                         }))}
                     />
-                )}
-            </AnimatePresence>
+                </VisibleDiv>
 
-            <DrawerEvents visible={!!drawerEvent} event={drawerEvent} close={closeDrawer} openVenue={openVenue} openArtworks={openArtworks} />
+                <DrawerEvents visible={!!drawerEvent} event={drawerEvent} close={closeDrawer} openVenue={openVenue} openArtworks={openArtworks} />
 
-            <AnimatePresence>{venueVisible && <PopinVenue visible={true} close={closeVenue} />}</AnimatePresence>
-        </AnimatedPage>
+                <PopinVenue visible={pageVisible && venueVisible} close={closeVenue} />
+            </div>
+        </Page>
     );
 }
