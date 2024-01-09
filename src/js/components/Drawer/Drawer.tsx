@@ -1,4 +1,5 @@
 import classNames from 'classnames';
+import useClickOutside from 'hooks/useClickOutside';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './styles.module.scss';
@@ -20,7 +21,7 @@ export function DrawerClose({ className, children, ...props }: any) {
 }
 
 export function Drawer({ visible, hideCloseBtn, close, className, children, ...props }: any) {
-    console.log('visible', visible);
+    const rootRef = useClickOutside(close);
 
     useEffect(() => {
         if (!visible) {
@@ -41,7 +42,7 @@ export function Drawer({ visible, hideCloseBtn, close, className, children, ...p
     }, [visible]);
 
     return createPortal(
-        <div className={classNames(styles.drawer, !visible && styles.drawer_hidden, className)} {...props}>
+        <div ref={rootRef} className={classNames(styles.drawer, !visible && styles.drawer_hidden, className)} {...props}>
             {!hideCloseBtn && <DrawerClose onClick={close} />}
             <div className={styles.content}>{children}</div>
         </div>,

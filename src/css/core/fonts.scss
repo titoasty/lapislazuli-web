@@ -11,7 +11,7 @@
 }
 
 // @include font('glacialindifference-regular', 'glacial');
-@include font('BoogyBrut-Regular', 'boogy');
-@include font('BoogyBrut-Bold', 'boogy', 'normal', 700);
-@include font('BoogyBrut-Light', 'boogy', 'normal', 300);
+@include font('BoogyBrut-Regular', 'boogy', normal, 400);
+@include font('BoogyBrut-Bold', 'boogy', normal, 700);
+@include font('BoogyBrut-Light', 'boogy', normal, 300);
 @include font('HankenGrotesk-Regular', 'grotesk');

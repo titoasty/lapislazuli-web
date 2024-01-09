@@ -12,15 +12,15 @@
     padding: 14rem 0 0 0;
     box-sizing: border-box;
 
-    &:after {
-        content: '';
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        height: 20rem;
-        background: linear-gradient(180deg, rgba(246, 234, 243, 0.00) 0%, #F6EAF3 75%);
-    }
+    // &:after {
+    //     content: '';
+    //     position: absolute;
+    //     left: 0;
+    //     bottom: 0;
+    //     right: 0;
+    //     height: 20rem;
+    //     background: linear-gradient(180deg, rgba(246, 234, 243, 0.00) 0%, #F6EAF3 75%);
+    // }
 
     transition: transform 0.7s $easeOutExpo, box-shadow 0.7s $easeOutExpo;
 
@@ -39,7 +39,6 @@
     box-sizing: border-box;
 
     font-size: 1.4rem;
-    font-weight: 350;
     overflow-x: hidden;
     overflow-y: auto;
 }

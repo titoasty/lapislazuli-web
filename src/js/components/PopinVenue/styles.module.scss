@@ -1,0 +1,58 @@
+.popinVenue {
+    @include full-fixed;
+    z-index: 1;
+
+    background-color: green;
+}
+
+.top {
+    width: 100%;
+    height: 100%;
+
+    padding: 0 3.2rem;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-end;
+
+    .title {
+        color: #252322;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.27);
+        font-family: boogy;
+        font-size: 5.6rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 5rem; /* 89.286% */
+        font-variant: small-caps;
+
+        margin-bottom: 2rem;
+    }
+
+    .back {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+
+        color: #252322;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.07);
+        font-family: Boogy Brut;
+        font-size: 1.6rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 90.2%; /* 14.432px */
+
+        cursor: pointer;
+        pointer-events: all;
+
+        .icon {
+            width: 17.625px;
+            height: 14.597px;
+            flex-shrink: 0;
+            margin-right: 0.84rem;
+
+            background: url('./images/back.svg');
+            background-size: cover;
+        }
+    }
+}

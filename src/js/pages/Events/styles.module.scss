@@ -1,33 +1,10 @@
 .page_events {
     @include full-fixed;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.slider {
-    width: 100%;
-    height: 39rem;
-    pointer-events: all;
-
-    overflow: visible !important;
-
-    :global {
-        .swiper-slide {
-            width: 39rem;
-        }
-    }
-}
-
-.slide {
-    width: 39rem;
-    height: 100%;
-
     .content {
         width: 100%;
         height: 100%;
-        
+
         cursor: pointer;
 
         .image {
@@ -52,103 +29,192 @@
             text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.07);
         }
     }
-}
 
-.bottom {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    @include center-flex;
-}
-
-.scrollbar {
-    position: relative;
-    width: 21.2rem;
-    height: max(1px, 0.1rem);
-    background-color: rgba(0, 0, 0, 0.1);
-
-    .trackContainer {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-
-        .track {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 50%;
-            background-color: $blackSoft;
-            transition: left 0.5s $easeOutSine;
-        }
-    }
-
-    .text {
+    .intro {
         position: absolute;
         left: 0;
-        right: 0;
-        bottom: -4rem;
-        color: $blackSoft;
-        text-align: center;
-        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.67);
-        font-family: grotesk;
-        font-size: 1.2rem;
+        top: 0;
+        bottom: 0;
+        width: 200rem;
+
+        transform: translate3d(-100%, 0, 0);
+        background: green;
+
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-end;
+        align-items: flex-start;
+
+        padding: 0 6.6rem 0 3.6rem;
+        box-sizing: border-box;
+
+        .title {
+            position: relative;
+
+            color: #252322;
+            text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.27);
+            font-family: boogy;
+            font-size: 5.6rem;
+            line-height: 5rem;
+
+            margin-bottom: 2.4rem;
+
+            &:after {
+                content: '';
+                position: absolute;
+                right: -2rem;
+                bottom: 0.4rem;
+                width: 1.6rem;
+                height: 1.6rem;
+
+                background-image: url('./images/circle.svg');
+                background-size: cover;
+            }
+        }
+
+        .desc {
+            color: #252322;
+            font-family: boogy;
+            font-size: 1.4rem;
+            max-width: 33rem;
+
+            b {
+                font-weight: bold;
+            }
+        }
     }
 }
 
-.intro {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 200rem;
-
-    transform: translate3d(-100%, 0, 0);
-    background: green;
-
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: flex-end;
-    align-items: flex-start;
-
-    padding: 0 6.6rem 0 3.6rem;
-    box-sizing: border-box;
-
+.drawer {
     .title {
-        position: relative;
-
         color: #252322;
-        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.27);
+        // text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.27);
         font-family: boogy;
         font-size: 5.6rem;
         line-height: 5rem;
+        font-variant: small-caps;
 
-        margin-bottom: 2.4rem;
+        margin-bottom: 0.4rem;
+    }
 
-        &:after {
-            content: '';
-            position: absolute;
-            right: -2rem;
-            bottom: 0.4rem;
+    .date {
+        color: #252322;
+        font-family: boogy;
+        font-size: 2.4rem;
+        font-weight: 350;
+
+        margin-bottom: 1.6rem;
+    }
+
+    .block {
+        margin-bottom: 1.6rem;
+    }
+
+    .subtitle {
+        color: #252322;
+        font-family: boogy;
+        font-size: 1.4rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .text {
+        color: #252322;
+        font-family: boogy;
+        font-size: 1.6rem;
+        font-weight: 350;
+    }
+
+    .small {
+        color: #252322;
+        font-family: boogy;
+        font-size: 1.2rem;
+        font-weight: 300;
+    }
+
+    .media {
+        color: #252322;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.07);
+        font-family: boogy;
+        font-size: 1.6rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 90.2%; /* 14.432px */
+        text-decoration-line: underline;
+
+        .download {
+            display: inline-block;
+            position: relative;
+            left: 0.5rem;
+            top: 0.25rem;
             width: 1.6rem;
             height: 1.6rem;
-
-            background-image: url('./images/circle.svg');
+            background-image: url('./images/download.svg');
             background-size: cover;
         }
     }
 
-    .desc {
-        color: #252322;
-        font-family: boogy;
-        font-size: 1.4rem;
-        max-width: 33rem;
+    .venue {
+        position: absolute;
+        left: 4.6rem;
+        bottom: 6.3rem;
 
-        b {
-            font-weight: bold;
+        color: #252322;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.07);
+        font-family: boogy;
+        font-size: 1.6rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 90.2%; /* 14.432px */
+        text-decoration-line: underline;
+    }
+
+    .artworks {
+        position: absolute;
+        right: 4.6rem;
+        bottom: 6.3rem;
+
+        color: #252322;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.07);
+        font-family: boogy;
+        font-size: 1.6rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 90.2%; /* 14.432px */
+        text-decoration-line: underline;
+    }
+
+    .artists {
+        display: flex;
+        flex-flow: column nowrap;
+
+        >* {
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: baseline;
         }
+
+        .artist {
+            color: #252322;
+            font-family: boogy;
+            font-size: 1.6rem;
+            font-weight: 350;
+        }
+
+        .dot {
+            display: block;
+            position: relative;
+            bottom: 0.2rem;
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 50%;
+            margin: 0 1.6rem;
+            background-color: green;
+            fill: var(--gradient, linear-gradient(221deg, #252322 -62.19%, #989898 133.47%));
+        }
+    }
+
+    a {
+        cursor: pointer;
     }
 }
