@@ -160,3 +160,21 @@ export function hexToRgb(hex: string) {
         b: parseInt(result![3], 16),
     };
 }
+
+export function isElementInView(elt: Element) {
+    const rect = elt.getBoundingClientRect();
+
+    if (rect.left + rect.width < 0) return false;
+    if (rect.left > window.innerWidth) return false;
+    if (rect.top + rect.height < 0) return false;
+    if (rect.top > window.innerHeight) return false;
+}
+
+export function isRectInView(rect: DOMRect) {
+    if (rect.left + rect.width < 0) return false;
+    if (rect.left > window.innerWidth) return false;
+    if (rect.top + rect.height < 0) return false;
+    if (rect.top > window.innerHeight) return false;
+
+    return true;
+}

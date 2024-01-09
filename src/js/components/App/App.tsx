@@ -5,11 +5,13 @@ import { Loader } from 'components/Loader/Loader';
 import { Logo } from 'components/Logo/Logo';
 import { Menu } from 'components/Menu/Menu';
 import { PopinPainting } from 'components/PopinPainting/PopinPainting';
+import { AnimatePresence } from 'framer-motion';
 import useLoaded from 'hooks/useLoaded';
+import { Artists } from 'pages/Artists/Artists';
 import { Events } from 'pages/Events/Events';
 import { Home } from 'pages/Home/Home';
 import { useEffect } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { NoToneMapping } from 'three';
 import styles from './styles.module.scss';
 
@@ -25,43 +27,45 @@ const Tmp = () => {
 };
 
 export function App() {
+    const location = useLocation();
     const { loaded } = useLoaded();
 
     return (
         <div className={styles.app}>
-            <BrowserRouter>
-                <Canvas //
-                    camera={{ fov: 40 }}
-                    gl={{
-                        toneMapping: NoToneMapping, //
-                        antialias: true,
-                        alpha: false,
-                    }}
-                    dpr={1}
-                >
-                    <color attach="background" args={['white']} />
-                    <AsyncLoader />
-                    {loaded && (
-                        <>
-                            {/* <Home3D /> */}
-                            <Preload all />
-                        </>
-                    )}
-                    {/* <Stats /> */}
-                </Canvas>
+            <Canvas //
+                camera={{ fov: 40 }}
+                gl={{
+                    toneMapping: NoToneMapping, //
+                    antialias: true,
+                    alpha: false,
+                }}
+                dpr={1}
+            >
+                <color attach="background" args={['white']} />
+                <AsyncLoader />
                 {loaded && (
-                    <div className={styles.content}>
-                        <Routes>
+                    <>
+                        {/* <Home3D /> */}
+                        <Preload all />
+                    </>
+                )}
+                {/* <Stats /> */}
+            </Canvas>
+            {loaded && (
+                <div className={styles.content}>
+                    <AnimatePresence>
+                        <Routes location={location} key={location.pathname}>
                             <Route index element={<Home />} />
                             <Route path="/events" element={<Events />} />
+                            <Route path="/artists" element={<Artists />} />
                         </Routes>
                         <Logo />
-                    </div>
-                )}
-                <PopinPainting />
-                <Menu />
-                <Loader />
-            </BrowserRouter>
+                    </AnimatePresence>
+                </div>
+            )}
+            <PopinPainting />
+            <Menu />
+            <Loader />
         </div>
     );
 }

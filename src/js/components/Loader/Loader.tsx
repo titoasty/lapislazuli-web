@@ -1,5 +1,7 @@
 import classnames from 'classnames';
+import dummyAppData from 'dummyAppData';
 import useLoaded from 'hooks/useLoaded';
+import useMyStore from 'hooks/useMyStore';
 import { useEffect, useState } from 'react';
 import styles from './styles.module.scss';
 
@@ -10,9 +12,12 @@ let interval: NodeJS.Timer;
 export function Loader() {
     const { loaded, loadedPercent } = useLoaded();
     const [number, setNumber] = useState('00');
+    const setAppData = useMyStore((state) => state.setAppData);
 
     useEffect(() => {
         clearInterval(interval);
+
+        setAppData(dummyAppData);
 
         if (loaded) {
             setNumber('100');

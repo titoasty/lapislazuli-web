@@ -123,9 +123,11 @@ export function FullSlider({ slides, spaceBetween = 40, sliderClassName, slideCl
             </Swiper>
             <div ref={bottomRef} className={styles.bottom}>
                 {bottomContent}
-                <div ref={scrollbarRef} className={styles.scrollbar}>
-                    <div className={styles.trackContainer}>
-                        <div ref={trackRef} className={styles.track} />
+                <div className={styles.scrollbarWrapper}>
+                    <div ref={scrollbarRef} className={styles.scrollbar}>
+                        <div className={styles.trackContainer}>
+                            <div ref={trackRef} className={styles.track} />
+                        </div>
                     </div>
                     <div className={styles.text}>SCROLL TO EXPLORE</div>
                 </div>

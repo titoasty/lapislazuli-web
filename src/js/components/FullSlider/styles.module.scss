@@ -10,7 +10,7 @@
 
 .slider {
     width: 100%;
-    height: 39rem;
+    // height: 39rem;
     pointer-events: all;
 
     overflow: visible !important;
@@ -53,38 +53,51 @@
     @include center-flex;
 }
 
-.scrollbar {
-    position: relative;
-    width: 21.2rem;
-    height: max(1px, 0.1rem);
-    background-color: rgba(0, 0, 0, 0.1);
+.scrollbarWrapper {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 3.7rem;
 
-    .trackContainer {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+
+    .scrollbar {
         position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
+        width: 21.2rem;
+        height: max(1px, 0.1rem);
+        background-color: rgba(0, 0, 0, 0.1);
 
-        .track {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 50%;
-            background-color: $blackSoft;
-            transition: left 0.5s $easeOutSine;
+        .trackContainer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+
+            .track {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 50%;
+                background-color: $blackSoft;
+                transition: left 0.5s $easeOutSine;
+            }
         }
     }
 
     .text {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -4rem;
+        // position: absolute;
+        // left: 0;
+        // right: 0;
+        // bottom: -4rem;
         color: $blackSoft;
         text-align: center;
         text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.67);
         font-family: grotesk;
         font-size: 1.2rem;
+
+        margin-top: 3.3rem;
     }
 }

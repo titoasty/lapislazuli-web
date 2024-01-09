@@ -1,0 +1,133 @@
+.drawer {
+    .title {
+        color: #252322;
+        // text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.27);
+        font-family: boogy;
+        font-size: 5.6rem;
+        line-height: 5rem;
+        font-variant: small-caps;
+
+        margin-bottom: 0.4rem;
+    }
+
+    .date {
+        color: #252322;
+        font-family: boogy;
+        font-size: 2.4rem;
+        font-weight: 350;
+
+        margin-bottom: 1.6rem;
+    }
+
+    .block {
+        margin-bottom: 1.6rem;
+    }
+
+    .subtitle {
+        color: #252322;
+        font-family: boogy;
+        font-size: 1.4rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .text {
+        color: #252322;
+        font-family: boogy;
+        font-size: 1.6rem;
+        font-weight: 350;
+    }
+
+    .small {
+        color: #252322;
+        font-family: boogy;
+        font-size: 1.2rem;
+        font-weight: 300;
+    }
+
+    .media {
+        color: #252322;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.07);
+        font-family: boogy;
+        font-size: 1.6rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 90.2%; /* 14.432px */
+        text-decoration-line: underline;
+
+        .download {
+            display: inline-block;
+            position: relative;
+            left: 0.5rem;
+            top: 0.25rem;
+            width: 1.6rem;
+            height: 1.6rem;
+            background-image: url('./images/download.svg');
+            background-size: cover;
+        }
+    }
+
+    .venue {
+        position: absolute;
+        left: 4.6rem;
+        bottom: 6.3rem;
+
+        color: #252322;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.07);
+        font-family: boogy;
+        font-size: 1.6rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 90.2%; /* 14.432px */
+        text-decoration-line: underline;
+    }
+
+    .artworks {
+        position: absolute;
+        right: 4.6rem;
+        bottom: 6.3rem;
+
+        color: #252322;
+        text-shadow: 0 0.4rem 6.2rem rgba(38, 29, 23, 0.07);
+        font-family: boogy;
+        font-size: 1.6rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 90.2%; /* 14.432px */
+        text-decoration-line: underline;
+    }
+
+    .artists {
+        display: flex;
+        flex-flow: column nowrap;
+
+        > * {
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: baseline;
+        }
+
+        .artist {
+            color: #252322;
+            font-family: boogy;
+            font-size: 1.6rem;
+            font-weight: 350;
+        }
+
+        .dot {
+            display: block;
+            position: relative;
+            bottom: 0.2rem;
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 50%;
+            margin: 0 1.6rem;
+            background-color: green;
+            fill: var(--gradient, linear-gradient(221deg, #252322 -62.19%, #989898 133.47%));
+        }
+    }
+
+    a {
+        cursor: pointer;
+    }
+}

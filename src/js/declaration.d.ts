@@ -15,3 +15,12 @@ interface PowerRef {
     get: () => number;
     set: (power: number) => void;
 }
+
+interface AppData {
+    events: EventData[];
+}
+
+interface EventData {
+    title: string;
+    type: string;
+}

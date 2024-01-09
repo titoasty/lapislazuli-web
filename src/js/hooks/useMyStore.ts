@@ -12,6 +12,10 @@ const useMyStore = create<StoreState>()((set) => ({
     setLoadedPercent: (loadedPercent: number) => set(() => ({ loadedPercent })),
     preloaded: false,
     setPreloaded: (preloaded: boolean) => set(() => ({ preloaded })),
+    appData: {
+        events: [],
+    },
+    setAppData: (appData: AppData) => set(() => ({ appData })),
 }));
 
 export default useMyStore;
